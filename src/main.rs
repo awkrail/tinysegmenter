@@ -1,3 +1,14 @@
+/**
+TinySegmenter 0.1 -- Super compact Japanese tokenizer in Javascript
+(c) 2008 Taku Kudo <taku@chasen.org>
+TinySegmenter is freely distributable under the terms of a new BSD licence.
+For details, see http://lilyx.net/pages/tinysegmenter_licence.txt
+**/
+
+/**
+TinySegmenter in Rust is written and distributed by Taichi Nishimura
+**/
+
 use std::env;
 use std::collections::HashMap;
 use std::char;
@@ -118,7 +129,6 @@ fn tokenize(text: &String) -> String {
     let mut ctype: Vec<&str> = vec!["O", "O", "O"];
 
     // initial states
-
     
     // boundary or not
     result.push('あ');
