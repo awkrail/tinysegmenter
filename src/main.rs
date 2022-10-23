@@ -118,21 +118,103 @@ fn construct_scorer_hashmap() -> HashMap<String, HashMap<String, i32>> {
     scorer_map
 }
 
+fn get_key_tag(c: &char, char_map: &HashMap<char, char>) -> char {
+    match char_map.get(&c) {
+        Some(x) => *x,
+        None => 'O'
+    }
+}
+
+fn cast_char_to_str(c: char) -> String {
+    let str_c: String = c.to_string();
+    str_c
+}
+
+fn boundary_prediction(segments: Vec<String>, ctype: Vec<char>, str_score_map: HashMap<String, HashMap<String, i32>>) -> Vec<String> {
+    let mut result: Vec<String> = Vec::new();
+
+    // TODO: understand borrow and reference system and re-write it
+    let mut word = &segments[3];
+    let mut p1 = string("U1");
+    let mut p2 = string("U2");
+    let mut p3 = string("U3");
+    
+    // uni-gram
+    let mut w1 = &segments[0];
+    let mut w2 = &segments[1];
+    let mut w3 = &segments[2];
+    let mut w4 = &segments[3];
+    let mut w5 = &segments[4];
+    let mut w6 = &segments[5];
+
+    // bi-gram
+    let mut w2w3 = [*w2, *w3].concat();
+    let mut w3w4 = [*w3, *w4].concat();
+    let mut w4w5 = [*w4, *w5].concat();
+    let mut w5w6 = [*w5, *w6].concat();
+
+    // tri-gram
+    let mut w1w2w3 = [*w1, (*w2w3).to_string()].concat();
+    let mut w2w3w4 = [*w2, (*w3w4).to_string()].concat();
+    let mut w3w4w5 = [*w3, (*w4w5).to_string()].concat();
+    let mut w4w5w6 = [*w4, (*w5w6).to_string()].concat();
+
+    // uni-gram, bi-gram, and tri-gram of tag-types
+    let mut c1 = &ctype[0].to_string();
+    let mut c2 = &ctype[1].to_string();
+    let mut c3 = &ctype[2].to_string();
+    let mut c4 = &ctype[3].to_string();
+    let mut c5 = &ctype[4].to_string();
+    let mut c6 = &ctype[5].to_string();
+
+    let mut c2c3 = [*c2, *c3].concat();
+    let mut c3c4 = [*c3, *c4].concat();
+    let mut c4c5 = [*c4, *c5].concat();
+    let mut c5c6 = [*c5, *c6].concat();
+
+    let mut c1c2c3 = [*c1, (*c2c3).to_string()].concat();
+    let mut c2c3c4 = [*c2, (*c3c4).to_string()].concat();
+    let mut c3c4c5 = [*c3, (*c4c5).to_string()].concat();
+    let mut c4c5c6 = [*c4, (*c5c6).to_string()].concat();
+
+    /**
+    for i in 4..segments.len()-3 {
+        let mut score = -332 // bias
+        w1 = w2
+        w2 = w3
+        w3 = w4
+        w4 = w5
+        w6 = segments[i+2]
+        c1 = c2
+    }
+    **/
+
+    result.push(string("ああ"));
+    result.push(string("ああ"));
+    result
+}
+
 fn tokenize(text: &String) -> String {
     if text.len() == 0 { return String::from(""); }
-    let chars = construct_words(text);
+    
     let char_map = construct_hashmap();
     let str_score_map = construct_scorer_hashmap();
 
-    let mut result: Vec<char> = Vec::new();
-    let mut segments: Vec<&str> = vec!["B3", "B2", "B1", "E1", "E2", "E3"];
-    let mut ctype: Vec<&str> = vec!["O", "O", "O"];
+    let chars = construct_words(text);
+    let str_chars: Vec<String> = chars.iter().map(|c| String::from(*c)).collect();
+    let ctype_text: Vec<char> = chars.into_iter().map(|c| get_key_tag(&c, &char_map)).collect();
 
-    // initial states
-    
-    // boundary or not
-    result.push('あ');
-    let segmented_str = String::from_iter(result);
+    let mut segments: Vec<String> = vec![string("B3"), string("B2"), string("B1"), string("E1"), string("E2"), string("E3")];
+    let mut ctype: Vec<char> = vec!['O', 'O', 'O'];
+
+    ctype.extend(ctype_text);
+    segments.extend(str_chars);
+
+    ctype.extend(vec!['O', 'O', 'O']);
+    segments.extend(vec![string("E1"), string("E2"), string("E3")]);
+
+    let result = boundary_prediction(segments, ctype, str_score_map);
+    let segmented_str = result.join(" ");
     segmented_str
 }
 
