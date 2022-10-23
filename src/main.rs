@@ -177,6 +177,10 @@ fn cast_char_to_str(c: char) -> String {
     str_c
 }
 
+fn compute_score(ngram_info: &CharNgram) -> Int {
+    0
+}
+
 fn boundary_prediction(segments: Vec<String>, ctype: Vec<char>, str_score_map: HashMap<String, HashMap<String, i32>>) -> Vec<String> {
     let mut result: Vec<String> = Vec::new();
     let mut char_info: CharInfo = CharInfo {w1: &segments[0], w2: &segments[1], w3: &segments[2], 
@@ -199,10 +203,9 @@ fn boundary_prediction(segments: Vec<String>, ctype: Vec<char>, str_score_map: H
     
     let mut pinfo: PInfo = PInfo { p1: 'U', p2: 'U', p3: 'U', p: 'O' };
     let mut ngram_info: CharNgram = CharNgram { char_info: char_info, type_info: ctype_info, pinfo: pinfo };
+    let mut word = segments[3].clone();
 
     for i in 4..segments.len()-3 {
-        let mut score = -332; // bias
-
         // uni-gram
         ngram_info.char_info.w1 = ngram_info.char_info.w2;
         ngram_info.char_info.w2 = ngram_info.char_info.w3;
@@ -210,6 +213,7 @@ fn boundary_prediction(segments: Vec<String>, ctype: Vec<char>, str_score_map: H
         ngram_info.char_info.w4 = ngram_info.char_info.w5;
         ngram_info.char_info.w5 = ngram_info.char_info.w6;
         ngram_info.char_info.w6 = &segments[i+2];
+        
         ngram_info.type_info.c1 = ngram_info.type_info.c2;
         ngram_info.type_info.c2 = ngram_info.type_info.c3;
         ngram_info.type_info.c3 = ngram_info.type_info.c4;
@@ -218,16 +222,42 @@ fn boundary_prediction(segments: Vec<String>, ctype: Vec<char>, str_score_map: H
         ngram_info.type_info.c6 = &ctype[i+2];
         
         // bi-gram
+        ngram_info.char_info.w2w3 = ngram_info.char_info.w3w4;
+        ngram_info.char_info.w3w4 = ngram_info.char_info.w4w5;
+        ngram_info.char_info.w4w5 = [ngram_info.char_info.w4, ngram_info.char_info.w5];
+
+        ngram_info.type_info.c2c3 = ngram_info.type_info.c3c4;
+        ngram_info.type_info.c3c4 = ngram_info.type_info.c4c5;
+        ngram_info.type_info.c4c5 = [ngram_info.type_info.c4, ngram_info.type_info.c5];
 
         // tri-gram
+        ngram_info.char_info.w1w2w3 = ngram_info.char_info.w2w3w4;
+        ngram_info.char_info.w2w3w4 = ngram_info.char_info.w3w4w5;
+        ngram_info.char_info.w3w4w5 = ngram_info.char_info.w4w5w6;
+        ngram_info.char_info.w4w5w6 = [ngram_info.char_info.w4w5[0], ngram_info.char_info.w4w5[1], ngram_info.char_info.w6];
+
+        ngram_info.type_info.c1c2c3 = ngram_info.type_info.c2c3c4;
+        ngram_info.type_info.c2c3c4 = ngram_info.type_info.c3c4c5;
+        ngram_info.type_info.c3c4c5 = ngram_info.type_info.c4c5c6;
+        ngram_info.type_info.c4c5c6 = [ngram_info.type_info.c4c5[0], ngram_info.type_info.c4c5[1], ngram_info.type_info.c6];
 
         // compute score
+        score = compute_score(&ngram_info);
 
         // segment or not?
+        if score > 0 {
+            result.append(word);
+            word = "";
+            ngram_info.pinfo.p = 'B';
+        }
+
+        ngram_info.pinfo.p1 = ngram_info.pinfo.p2;
+        ngram_info.pinfo.p2 = ngram_info.pinfo.p3;
+        ngram_info.pinfo.p3 = ngram_info.pinfo.p;
+        // concat word
+        // word += seg[i]
     }
 
-    result.push(string("ああ"));
-    result.push(string("ああ"));
     result
 }
 
