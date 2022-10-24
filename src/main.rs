@@ -177,12 +177,13 @@ fn cast_char_to_str(c: char) -> String {
     str_c
 }
 
-fn compute_score(ngram_info: &CharNgram) -> Int {
-    0
+fn compute_score(ngram_info: &CharNgram) -> i32 {
+    1
 }
 
 fn boundary_prediction(segments: Vec<String>, ctype: Vec<char>, str_score_map: HashMap<String, HashMap<String, i32>>) -> Vec<String> {
     let mut result: Vec<String> = Vec::new();
+    
     let mut char_info: CharInfo = CharInfo {w1: &segments[0], w2: &segments[1], w3: &segments[2], 
                                             w4: &segments[3], w5: &segments[4], w6: &segments[5],
                                             w2w3: [&segments[1], &segments[2]], w3w4: [&segments[2], &segments[3]],
@@ -242,22 +243,22 @@ fn boundary_prediction(segments: Vec<String>, ctype: Vec<char>, str_score_map: H
         ngram_info.type_info.c4c5c6 = [ngram_info.type_info.c4c5[0], ngram_info.type_info.c4c5[1], ngram_info.type_info.c6];
 
         // compute score
-        score = compute_score(&ngram_info);
+        let score = compute_score(&ngram_info);
 
         // segment or not?
         if score > 0 {
-            result.append(word);
-            word = "";
+            result.push(word);
+            word = string("");
             ngram_info.pinfo.p = 'B';
         }
 
         ngram_info.pinfo.p1 = ngram_info.pinfo.p2;
         ngram_info.pinfo.p2 = ngram_info.pinfo.p3;
         ngram_info.pinfo.p3 = ngram_info.pinfo.p;
-        // concat word
-        // word += seg[i]
+        word.push_str(&segments[i].clone());
     }
 
+    result.push(word);
     result
 }
 
@@ -271,8 +272,8 @@ fn tokenize(text: &String) -> String {
     let str_chars: Vec<String> = chars.iter().map(|c| String::from(*c)).collect();
     let ctype_text: Vec<char> = chars.into_iter().map(|c| get_key_tag(&c, &char_map)).collect();
 
-    let mut segments: Vec<String> = vec![string("B3"), string("B2"), string("B1"), string("E1"), string("E2"), string("E3")];
-    let mut ctype: Vec<char> = vec!['O', 'O', 'O', 'O', 'O', 'O'];
+    let mut segments: Vec<String> = vec![string("B3"), string("B2"), string("B1")];
+    let mut ctype: Vec<char> = vec!['O', 'O', 'O'];
 
     ctype.extend(ctype_text);
     segments.extend(str_chars);
