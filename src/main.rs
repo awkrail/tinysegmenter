@@ -172,13 +172,104 @@ fn get_key_tag(c: &char, char_map: &HashMap<char, char>) -> char {
     }
 }
 
-fn cast_char_to_str(c: char) -> String {
-    let str_c: String = c.to_string();
-    str_c
+fn get_score(key: &String, word: &String, str_score_map: &HashMap<String, HashMap<String, i32>>) -> i32 {
+    match str_score_map.get(key) {
+        Some(x) => match x.get(word) {
+            Some(y) => *y,
+            None => 0
+        },
+        None => -1
+    }
 }
 
-fn compute_score(ngram_info: &CharNgram) -> i32 {
-    1
+fn compute_score(ngram_info: &CharNgram, str_score_map: &HashMap<String, HashMap<String, i32>>) -> i32 {
+    let mut score = -332;
+    
+    // feature
+    let p1 = &ngram_info.pinfo.p1.to_string();
+    let p2 = &ngram_info.pinfo.p2.to_string();
+    let p3 = &ngram_info.pinfo.p3.to_string();
+    let p1p2 = format!("{}{}", &p1, &p2);
+    let p2p3 = format!("{}{}", &p2, &p3);
+    let w1 = &ngram_info.char_info.w1;
+    let w2 = &ngram_info.char_info.w2;
+    let w3 = &ngram_info.char_info.w3;
+    let w4 = &ngram_info.char_info.w4;
+    let w5 = &ngram_info.char_info.w5;
+    let w6 = &ngram_info.char_info.w6;
+    let w2w3 = format!("{}{}", ngram_info.char_info.w2w3[0], ngram_info.char_info.w2w3[1]);
+    let w3w4 = format!("{}{}", ngram_info.char_info.w3w4[0], ngram_info.char_info.w3w4[1]);
+    let w4w5 = format!("{}{}", ngram_info.char_info.w4w5[0], ngram_info.char_info.w4w5[1]);
+    let w1w2w3 = format!("{}{}{}", ngram_info.char_info.w1w2w3[0], ngram_info.char_info.w1w2w3[1], ngram_info.char_info.w1w2w3[2]);
+    let w2w3w4 = format!("{}{}{}", ngram_info.char_info.w2w3w4[0], ngram_info.char_info.w2w3w4[1], ngram_info.char_info.w2w3w4[2]);
+    let w3w4w5 = format!("{}{}{}", ngram_info.char_info.w3w4w5[0], ngram_info.char_info.w3w4w5[1], ngram_info.char_info.w3w4w5[2]);
+    let w4w5w6 = format!("{}{}{}", ngram_info.char_info.w4w5w6[0], ngram_info.char_info.w4w5w6[1], ngram_info.char_info.w4w5w6[2]);
+    let c1 = &ngram_info.type_info.c1.to_string();
+    let c2 = &ngram_info.type_info.c2.to_string();
+    let c3 = &ngram_info.type_info.c3.to_string();
+    let c4 = &ngram_info.type_info.c4.to_string();
+    let c5 = &ngram_info.type_info.c5.to_string();
+    let c6 = &ngram_info.type_info.c6.to_string();
+    let c2c3 = format!("{}{}", ngram_info.type_info.c2c3[0], ngram_info.type_info.c2c3[1]);
+    let c3c4 = format!("{}{}", ngram_info.type_info.c3c4[0], ngram_info.type_info.c3c4[1]);
+    let c4c5 = format!("{}{}", ngram_info.type_info.c4c5[0], ngram_info.type_info.c4c5[1]);
+    let c1c2c3 = format!("{}{}{}", ngram_info.type_info.c1c2c3[0], ngram_info.type_info.c1c2c3[1], ngram_info.type_info.c1c2c3[2]);
+    let c2c3c4 = format!("{}{}{}", ngram_info.type_info.c2c3c4[0], ngram_info.type_info.c2c3c4[1], ngram_info.type_info.c2c3c4[2]);
+    let c3c4c5 = format!("{}{}{}", ngram_info.type_info.c3c4c5[0], ngram_info.type_info.c3c4c5[1], ngram_info.type_info.c3c4c5[2]);
+    let c4c5c6 = format!("{}{}{}", ngram_info.type_info.c4c5c6[0], ngram_info.type_info.c4c5c6[1], ngram_info.type_info.c4c5c6[2]);
+    let p1c1 = format!("{}{}", &p1, &c1);
+    let p2c2 = format!("{}{}", &p2, &c2);
+    let p3c3 = format!("{}{}", &p3, &c3);
+    let p2c2c3 = format!("{}{}", &p2, &c2c3);
+    let p2c3c4 = format!("{}{}", &p2, &c3c4);
+    let p3c2c3 = format!("{}{}", &p3, &c2c3);
+    let p3c3c4 = format!("{}{}", &p3, &c3c4);
+    let p2c1c2c3 = format!("{}{}", &p2, &c1c2c3);
+    let p2c2c3c4 = format!("{}{}", &p2, &c2c3c4);
+    let p3c1c2c3 = format!("{}{}", &p3, &c1c2c3);
+    let p3c2c3c4 = format!("{}{}", &p3, &c2c3c4);
+
+    // feature to score
+    score += get_score(&string("UP1"), p1, &str_score_map);
+    score += get_score(&string("UP2"), p2, &str_score_map);
+    score += get_score(&string("UP3"), p3, &str_score_map);
+    score += get_score(&string("BP1"), &p1p2, &str_score_map);
+    score += get_score(&string("BP2"), &p2p3, &str_score_map);
+    score += get_score(&string("UW1"), w1, &str_score_map);
+    score += get_score(&string("UW2"), w2, &str_score_map);
+    score += get_score(&string("UW3"), w3, &str_score_map);
+    score += get_score(&string("BW1"), &w2w3, &str_score_map);
+    score += get_score(&string("BW2"), &w3w4, &str_score_map);
+    score += get_score(&string("BW3"), &w4w5, &str_score_map);
+    score += get_score(&string("TW1"), &w1w2w3, &str_score_map);
+    score += get_score(&string("TW2"), &w2w3w4, &str_score_map);
+    score += get_score(&string("TW3"), &w3w4w5, &str_score_map);
+    score += get_score(&string("TW4"), &w4w5w6, &str_score_map);
+    score += get_score(&string("UC1"), c1, &str_score_map);
+    score += get_score(&string("UC2"), c2, &str_score_map);
+    score += get_score(&string("UC3"), c3, &str_score_map);
+    score += get_score(&string("UC4"), c4, &str_score_map);
+    score += get_score(&string("UC5"), c5, &str_score_map);
+    score += get_score(&string("UC6"), c6, &str_score_map);
+    score += get_score(&string("BC1"), &c2c3, &str_score_map);
+    score += get_score(&string("BC2"), &c3c4, &str_score_map);
+    score += get_score(&string("BC3"), &c4c5, &str_score_map);
+    score += get_score(&string("TC1"), &c1c2c3, &str_score_map);
+    score += get_score(&string("TC2"), &c2c3c4, &str_score_map);
+    score += get_score(&string("TC3"), &c3c4c5, &str_score_map);
+    score += get_score(&string("TC4"), &c4c5c6, &str_score_map);
+    score += get_score(&string("UQ1"), &p1c1, &str_score_map);
+    score += get_score(&string("UQ2"), &p2c2, &str_score_map);
+    score += get_score(&string("UQ3"), &p3c3, &str_score_map);
+    score += get_score(&string("BQ1"), &p2c2c3, &str_score_map);
+    score += get_score(&string("BQ2"), &p2c3c4, &str_score_map);
+    score += get_score(&string("BQ3"), &p3c2c3, &str_score_map);
+    score += get_score(&string("BQ4"), &p3c3c4, &str_score_map);
+    score += get_score(&string("TQ1"), &p2c1c2c3, &str_score_map);
+    score += get_score(&string("TQ2"), &p2c2c3c4, &str_score_map);
+    score += get_score(&string("TQ3"), &p3c1c2c3, &str_score_map);
+    score += get_score(&string("TQ4"), &p3c2c3c4, &str_score_map);
+    score 
 }
 
 fn boundary_prediction(segments: Vec<String>, ctype: Vec<char>, str_score_map: HashMap<String, HashMap<String, i32>>) -> Vec<String> {
@@ -193,7 +284,7 @@ fn boundary_prediction(segments: Vec<String>, ctype: Vec<char>, str_score_map: H
                                             w3w4w5: [&segments[2], &segments[3], &segments[4]],
                                             w4w5w6: [&segments[3], &segments[4], &segments[5]]};
     
-    let mut ctype_info: TypeInfo = TypeInfo {c1: &ctype[0], c2: &ctype[1], c3: &ctype[2],
+    let ctype_info: TypeInfo = TypeInfo {c1: &ctype[0], c2: &ctype[1], c3: &ctype[2],
                                          c4: &ctype[3], c5: &ctype[4], c6: &ctype[5],
                                          c2c3: [&ctype[1], &ctype[2]], c3c4: [&ctype[2], &ctype[3]],
                                          c4c5: [&ctype[3], &ctype[4]], c5c6: [&ctype[4], &ctype[6]],
@@ -202,7 +293,7 @@ fn boundary_prediction(segments: Vec<String>, ctype: Vec<char>, str_score_map: H
                                          c3c4c5: [&ctype[2], &ctype[3], &ctype[4]],
                                          c4c5c6: [&ctype[3], &ctype[4], &ctype[6]]};
     
-    let mut pinfo: PInfo = PInfo { p1: 'U', p2: 'U', p3: 'U', p: 'O' };
+    let pinfo: PInfo = PInfo { p1: 'U', p2: 'U', p3: 'U', p: 'O' };
     let mut ngram_info: CharNgram = CharNgram { char_info: char_info, type_info: ctype_info, pinfo: pinfo };
     let mut word = segments[3].clone();
 
@@ -243,7 +334,7 @@ fn boundary_prediction(segments: Vec<String>, ctype: Vec<char>, str_score_map: H
         ngram_info.type_info.c4c5c6 = [ngram_info.type_info.c4c5[0], ngram_info.type_info.c4c5[1], ngram_info.type_info.c6];
 
         // compute score
-        let score = compute_score(&ngram_info);
+        let score = compute_score(&ngram_info, &str_score_map);
 
         // segment or not?
         if score > 0 {
